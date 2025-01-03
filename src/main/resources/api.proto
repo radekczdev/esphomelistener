@@ -1,0 +1,112 @@
+package protobuf;
+
+option java_package = "radekczdev.esplistener.protos";
+option java_outer_classname = "EspHomeProtos";
+
+
+// ==================== BASE PACKETS ====================
+
+// The Home Assistant protocol is structured as a simple
+// TCP socket with short binary messages encoded in the protocol buffers format
+// First, a message in this protocol has a specific format:
+//  * A zero byte.
+//  * VarInt denoting the size of the message object. (type is not part of this)
+//  * VarInt denoting the type of message.
+//  * The message object encoded as a ProtoBuf message
+
+// The connection is established in 4 steps:
+//  * First, the client connects to the server and sends a "Hello Request" identifying itself
+//  * The server responds with a "Hello Response" and selects the protocol version
+//  * After receiving this message, the client attempts to authenticate itself using
+//    the password and a "Connect Request"
+//  * The server responds with a "Connect Response" and notifies of invalid password.
+// If anything in this initial process fails, the connection must immediately closed
+// by both sides and _no_ disconnection message is to be sent.
+
+// Message sent at the beginning of each connection
+// Can only be sent by the client and only at the beginning of the connection
+message HelloRequest {
+  //  uint32 id = 1;
+  //  source = SOURCE_CLIENT;
+  //  no_delay = true;
+
+  // Description of client (like User Agent)
+  // For example "Home Assistant"
+  // Not strictly necessary to send but nice for debugging
+  // purposes.
+  optional string client_info = 1;
+  optional uint32 api_version_major = 2;
+  optional uint32 api_version_minor = 3;
+}
+
+// Confirmation of successful connection request.
+// Can only be sent by the server and only at the beginning of the connection
+message HelloResponse {
+  //  uint32 id = 2;
+  //  source = SOURCE_SERVER;
+  //  no_delay = true;
+
+  // The version of the API to use. The _client_ (for example Home Assistant) needs to check
+  // for compatibility and if necessary adopt to an older API.
+  // Major is for breaking changes in the base protocol - a mismatch will lead to immediate disconnect_client_
+  // Minor is for breaking changes in individual messages - a mismatch will lead to a warning message
+  optional uint32 api_version_major = 1;
+  optional uint32 api_version_minor = 2;
+
+  // A string identifying the server (ESP); like client info this may be empty
+  // and only exists for debugging/logging purposes.
+  // For example "ESPHome v1.10.0 on ESP8266"
+  optional string server_info = 3;
+
+  // The name of the server (App.get_name())
+  optional string name = 4;
+}
+
+// Message sent at the beginning of each connection to authenticate the client
+// Can only be sent by the client and only at the beginning of the connection
+message ConnectRequest {
+//  uint32 id = 3;
+//  source = SOURCE_CLIENT;
+//  no_delay = true;
+
+  // The password to log in with
+  required string password = 1;
+}
+
+// Confirmation of successful connection. After this the connection is available for all traffic.
+// Can only be sent by the server and only at the beginning of the connection
+message ConnectResponse {
+//  uint32 id = 4;
+//  source = SOURCE_SERVER;
+//  no_delay = true;
+
+  required bool invalid_password = 1;
+}
+
+// Request to close the connection.
+// Can be sent by both the client and server
+message DisconnectRequest {
+//  uint32 id = 5;
+//  source = SOURCE_BOTH;
+//  no_delay = true;
+
+  // Do not close the connection before the acknowledgement arrives
+}
+
+message DisconnectResponse {
+//  uint32 id = 6;
+//  source = SOURCE_BOTH;
+//  no_delay = true;
+
+  // Empty - Both parties are required to close the connection after this
+  // message has been received.
+}
+
+enum MessageType {
+  HELLO_REQUEST = 1;
+  HELLO_RESPONSE = 2;
+  CONNECT_REQUEST = 3;
+  CONNECT_RESPONSE = 4;
+  DISCONNECT_REQUEST = 5;
+  DISCONNECT_RESPONSE = 6;
+}

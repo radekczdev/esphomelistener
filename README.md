@@ -13,10 +13,10 @@ In order to generate java class with proper messages, you need to use the protoc
 
 ### Environment variables
 This app uses 3 environment variables, which needs to be configured:
-- _ESPDEVICEIP_ - IP address of the ESPHome device
+- _ESPDEVICEHOSTNAME_ - hostname/IP address of the ESPHome device
 - _ESPDEVICEPORT_ - Port of the ESPHome device
 - _ESPDEVICEPASS_ - Password of the ESPHome device API
 
 ## TODOs:
-- replace _Socket_ with _SocketChannel_ to make it non-blocking
-- add code, which will ensure answer to message has came - currently it's needed to press '_y_' multiple time and reprocess the _while_ loop
+- ~~replace _Socket_ with _SocketChannel_ to make it non-blocking~~ done
+- ~~add code, which will ensure answer to message has came - currently it's needed to press '_y_' multiple time and reprocess the _while_ loop~~ fixed
